@@ -1031,6 +1031,26 @@ describe('server', function () {
       });
     });
 
+    it('should arrive when special char utf-8 strings are sent (polling)', function(done) {
+      var str = 'apples ';
+
+      var opts = { allowUpgrades: false, transports: ['polling'] };
+      var engine = listen(opts, function(port) {
+        var socket = new eioc.Socket('ws://localhost:%d'.s(port), { transports: ['polling'] });
+
+        engine.on('connection', function (conn) {
+          conn.send(str);
+        });
+
+        socket.on('open', function() {
+          socket.on('message', function(msg) {
+              expect(msg).to.be('apples ');
+              done();
+          });
+        });
+      });
+    });
+
     it('should arrive when binary data sent as Buffer (polling)', function (done) {
       var binaryData = Buffer(5);
       for (var i = 0; i < binaryData.length; i++) {
